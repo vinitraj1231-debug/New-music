@@ -1,7 +1,15 @@
 import time
-from pyrogram import filters
+from pyrogram import filters, enums
 from bot.core.client import bot
+from bot.database.db import db
 from datetime import datetime
+
+@bot.on_message(group=1)
+async def track_chats(_, message):
+    if message.chat.type == enums.ChatType.PRIVATE:
+        await db.add_served_user(message.chat.id)
+    else:
+        await db.add_served_group(message.chat.id)
 
 @bot.on_message(filters.command("ping"))
 async def ping_handler(_, message):
