@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: telegram-vc-music-bot
+    env: python
+    plan: free
+    buildCommand: |
+      pip install -U pip
+      pip install -r requirements.txt
+    startCommand: python main.py
+    envVars:
+      - key: API_ID
+        sync: false
+
+      - key: API_HASH
+        sync: false
+
+      - key: BOT_TOKEN
+        sync: false
+
+      - key: STRING_SESSION
+        sync: false
+
+      - key: MONGO_DB_URI
+        sync: false
+
+      - key: OWNER_ID
+        sync: false
+
+      - key: LOG_GROUP_ID
+        sync: false
+
+      - key: SUDO_USERS
+        sync: false
