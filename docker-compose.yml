@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  music_bot:
+    build: .
+    container_name: music_bot
+    env_file:
+      - .env
+    restart: always

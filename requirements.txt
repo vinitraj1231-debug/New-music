@@ -1,0 +1,14 @@
+pyrogram
+py-tgcalls
+yt-dlp
+motor
+aiohttp
+python-dotenv
+apscheduler
+pillow
+isodate
+psutil
+requests
+flask
+aiofiles
+pymongo
