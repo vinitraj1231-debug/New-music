@@ -34,7 +34,10 @@ async def main():
             await assistant.start()
             logger.info("Assistant started.")
         except Exception as e:
-            logger.error(f"Failed to start Assistant: {e}")
+            if "unpack requires a buffer of" in str(e):
+                logger.error("Invalid STRING_SESSION: Failed to unpack session string. Please check your session string.")
+            else:
+                logger.error(f"Failed to start Assistant: {e}")
     
     if assistant.is_connected:
         await call_py.start()

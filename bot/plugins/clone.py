@@ -1,7 +1,6 @@
 import os
 import asyncio
 from pyrogram import Client, filters
-from bot.core.client import bot
 from bot.database.db import db
 from bot.config.config import config
 
@@ -17,7 +16,7 @@ async def start_clone(bot_token, api_id, api_hash, string_session):
         api_id=api_id,
         api_hash=api_hash,
         bot_token=bot_token,
-        plugins=dict(root="bot/plugins")
+        plugins=dict(root="bot.plugins")
     )
 
     clone_assistant = Client(
@@ -48,8 +47,8 @@ async def stop_clone(bot_token):
 
     return stopped
 
-@bot.on_message(filters.command("clone") & filters.private)
-async def clone_bot_handler(_, message):
+@Client.on_message(filters.command("clone") & filters.private)
+async def clone_bot_handler(client, message):
     if len(message.command) < 5:
         return await message.reply(
             "**Usage:**\n/clone [bot_token] [api_id] [api_hash] [string_session]"
@@ -72,8 +71,8 @@ async def clone_bot_handler(_, message):
     except Exception as e:
         await msg.edit(f"**Error:** {e}")
 
-@bot.on_message(filters.command("clones") & filters.user(config.OWNER_ID))
-async def list_clones(_, message):
+@Client.on_message(filters.command("clones") & filters.user(config.OWNER_ID))
+async def list_clones(client, message):
     clones = await db.get_clones()
     if not clones:
         return await message.reply("No clones running.")
@@ -84,8 +83,8 @@ async def list_clones(_, message):
 
     await message.reply(text)
 
-@bot.on_message(filters.command("delclone") & filters.user(config.OWNER_ID))
-async def del_clone_handler(_, message):
+@Client.on_message(filters.command("delclone") & filters.user(config.OWNER_ID))
+async def del_clone_handler(client, message):
     if len(message.command) < 2:
         return await message.reply("**Usage:** /delclone [bot_token]")
 
