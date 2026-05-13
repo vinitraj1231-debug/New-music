@@ -1,9 +1,8 @@
-from pyrogram import filters
-from bot.core.client import bot
+from pyrogram import filters, Client
 from bot.services.playlist_service import playlist_service
 
-@bot.on_message(filters.command("playlist") & filters.group)
-async def playlist_command(_, message):
+@Client.on_message(filters.command("playlist") & filters.group)
+async def playlist_command(client, message):
     user_id = message.from_user.id
     playlists = await playlist_service.get_user_playlists(user_id)
     if not playlists:

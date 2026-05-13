@@ -1,10 +1,10 @@
+from pyrogram import Client
 from pyrogram.types import CallbackQuery
-from bot.core.client import bot
 from bot.core.call import call_py
 from bot.services.playback_service import playback_service
 
-@bot.on_callback_query()
-async def cb_handler(_, query: CallbackQuery):
+@Client.on_callback_query()
+async def cb_handler(client, query: CallbackQuery):
     if query.data == "pause":
         try:
             await call_py.pause(query.message.chat.id)

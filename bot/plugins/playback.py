@@ -1,12 +1,11 @@
-from pyrogram import filters
-from bot.core.client import bot
+from pyrogram import filters, Client
 from bot.services.yt_service import yt_service
 from bot.services.queue_service import queue_service
 from bot.services.playback_service import playback_service
 from pyrogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup
 
-@bot.on_message(filters.command("play") & filters.group)
-async def play_command(_, message: Message):
+@Client.on_message(filters.command("play") & filters.group)
+async def play_command(client: Client, message: Message):
     query = " ".join(message.command[1:])
     if not query:
         return await message.reply("Please provide a song name or link.")
@@ -53,8 +52,8 @@ async def play_command(_, message: Message):
             reply_markup=buttons
         )
 
-@bot.on_message(filters.command("skip") & filters.group)
-async def skip_command(_, message: Message):
+@Client.on_message(filters.command("skip") & filters.group)
+async def skip_command(client: Client, message: Message):
     # Admin check would go here
     res = await playback_service.skip(message.chat.id)
     if res is True:
@@ -64,13 +63,13 @@ async def skip_command(_, message: Message):
     else:
         await message.reply("Failed to skip.")
 
-@bot.on_message(filters.command("stop") & filters.group)
-async def stop_command(_, message: Message):
+@Client.on_message(filters.command("stop") & filters.group)
+async def stop_command(client: Client, message: Message):
     await playback_service.stop(message.chat.id)
     await message.reply("⏹ Stopped and queue cleared.")
 
-@bot.on_message(filters.command("pause") & filters.group)
-async def pause_command(_, message: Message):
+@Client.on_message(filters.command("pause") & filters.group)
+async def pause_command(client: Client, message: Message):
     from bot.core.call import call_py
     try:
         await call_py.pause(message.chat.id)
@@ -78,8 +77,8 @@ async def pause_command(_, message: Message):
     except Exception:
         await message.reply("Nothing is playing.")
 
-@bot.on_message(filters.command("resume") & filters.group)
-async def resume_command(_, message: Message):
+@Client.on_message(filters.command("resume") & filters.group)
+async def resume_command(client: Client, message: Message):
     from bot.core.call import call_py
     try:
         await call_py.resume(message.chat.id)

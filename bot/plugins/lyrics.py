@@ -1,9 +1,8 @@
-from pyrogram import filters
-from bot.core.client import bot
+from pyrogram import filters, Client
 from bot.services.lyrics_service import lyrics_service
 
-@bot.on_message(filters.command("lyrics"))
-async def lyrics_command(_, message):
+@Client.on_message(filters.command("lyrics"))
+async def lyrics_command(client, message):
     query = " ".join(message.command[1:])
     if not query:
         return await message.reply("Provide a song name.")

@@ -1,11 +1,10 @@
 import asyncio
-from pyrogram import filters, types
-from bot.core.client import bot
+from pyrogram import filters, types, Client
 from bot.database.db import db
 from bot.config.config import config
 
-@bot.on_message(filters.command("supreme") & filters.private)
-async def supreme_panel(_, message):
+@Client.on_message(filters.command("supreme") & filters.private)
+async def supreme_panel(client, message):
     if not await db.is_supreme(message.from_user.id):
         return await message.reply("You don't have Supreme access.")
 
@@ -23,8 +22,8 @@ async def supreme_panel(_, message):
     ]
     await message.reply("Welcome to the **Supreme Panel**.", reply_markup=types.InlineKeyboardMarkup(buttons))
 
-@bot.on_callback_query(filters.regex("^manage_clones$"))
-async def manage_clones_cb(_, query):
+@Client.on_callback_query(filters.regex("^manage_clones$"))
+async def manage_clones_cb(client, query):
     if not await db.is_supreme(query.from_user.id):
         return await query.answer("Access Denied", show_alert=True)
 
@@ -43,8 +42,8 @@ async def manage_clones_cb(_, query):
     buttons.append([types.InlineKeyboardButton("Back", callback_data="back_to_supreme")])
     await query.edit_message_text("Select a clone to edit:", reply_markup=types.InlineKeyboardMarkup(buttons))
 
-@bot.on_callback_query(filters.regex("^edit_clone_"))
-async def edit_clone_cb(_, query):
+@Client.on_callback_query(filters.regex("^edit_clone_"))
+async def edit_clone_cb(client, query):
     if not await db.is_supreme(query.from_user.id):
         return await query.answer("Access Denied", show_alert=True)
 
@@ -77,7 +76,7 @@ async def edit_clone_cb(_, query):
     ]
     await query.edit_message_text(text, reply_markup=types.InlineKeyboardMarkup(buttons))
 
-@bot.on_callback_query(filters.regex("^updt_ss_"))
+@Client.on_callback_query(filters.regex("^updt_ss_"))
 async def update_session_cb(client, query):
     if not await db.is_supreme(query.from_user.id):
         return await query.answer("Access Denied", show_alert=True)
@@ -91,7 +90,7 @@ async def update_session_cb(client, query):
 
     await query.edit_message_text(f"To update the session for clone `{token_suffix}`, use command:\n`/updt_sess {clone['bot_token']} NEW_SESSION_HERE`")
 
-@bot.on_message(filters.command("updt_sess") & filters.private)
+@Client.on_message(filters.command("updt_sess") & filters.private)
 async def updt_sess_command(client, message):
     if not await db.is_supreme(message.from_user.id):
         return await message.reply("Access Denied")
@@ -111,7 +110,7 @@ async def updt_sess_command(client, message):
     await db.add_clone(bot_token, clone['api_id'], clone['api_hash'], new_session, clone['user_id'])
     await message.reply(f"Session updated for clone `{bot_token[:10]}...`")
 
-@bot.on_callback_query(filters.regex("^updt_tk_"))
+@Client.on_callback_query(filters.regex("^updt_tk_"))
 async def update_token_cb(client, query):
     if not await db.is_supreme(query.from_user.id):
         return await query.answer("Access Denied", show_alert=True)
@@ -125,7 +124,7 @@ async def update_token_cb(client, query):
 
     await query.edit_message_text(f"To update the bot token for clone `{token_suffix}`, use command:\n`/updt_tok {clone['bot_token']} NEW_TOKEN_HERE`")
 
-@bot.on_message(filters.command("updt_tok") & filters.private)
+@Client.on_message(filters.command("updt_tok") & filters.private)
 async def updt_tok_command(client, message):
     if not await db.is_supreme(message.from_user.id):
         return await message.reply("Access Denied")
@@ -149,7 +148,7 @@ async def updt_tok_command(client, message):
     await db.add_clone(new_token, clone['api_id'], clone['api_hash'], clone['string_session'], clone['user_id'])
     await message.reply(f"Token updated for clone. Please use `/clone` or restart if it doesn't start automatically.")
 
-@bot.on_callback_query(filters.regex("^conf_del_"))
+@Client.on_callback_query(filters.regex("^conf_del_"))
 async def confirm_del_clone_cb(client, query):
     if not await db.is_supreme(query.from_user.id):
         return await query.answer("Access Denied", show_alert=True)
@@ -169,7 +168,7 @@ async def confirm_del_clone_cb(client, query):
     ]
     await query.edit_message_text(f"Are you sure you want to delete clone `{token_suffix}`?", reply_markup=types.InlineKeyboardMarkup(buttons))
 
-@bot.on_callback_query(filters.regex("^real_del_"))
+@Client.on_callback_query(filters.regex("^real_del_"))
 async def real_del_clone_cb(client, query):
     if not await db.is_supreme(query.from_user.id):
         return await query.answer("Access Denied", show_alert=True)
@@ -187,8 +186,8 @@ async def real_del_clone_cb(client, query):
 
     await query.edit_message_text(f"Clone `{token_suffix}` has been deleted.", reply_markup=types.InlineKeyboardMarkup([[types.InlineKeyboardButton("Back to Clones", callback_data="manage_clones")]]))
 
-@bot.on_callback_query(filters.regex("^back_to_supreme$"))
-async def back_to_supreme_cb(_, query):
+@Client.on_callback_query(filters.regex("^back_to_supreme$"))
+async def back_to_supreme_cb(client, query):
     if not await db.is_supreme(query.from_user.id):
         return await query.answer("Access Denied", show_alert=True)
 
@@ -206,8 +205,8 @@ async def back_to_supreme_cb(_, query):
     ]
     await query.edit_message_text("Welcome to the **Supreme Panel**.", reply_markup=types.InlineKeyboardMarkup(buttons))
 
-@bot.on_callback_query(filters.regex("^broadcast_menu$"))
-async def broadcast_menu_cb(_, query):
+@Client.on_callback_query(filters.regex("^broadcast_menu$"))
+async def broadcast_menu_cb(client, query):
     if not await db.is_supreme(query.from_user.id):
         return await query.answer("Access Denied", show_alert=True)
 
@@ -216,8 +215,8 @@ async def broadcast_menu_cb(_, query):
         reply_markup=types.InlineKeyboardMarkup([[types.InlineKeyboardButton("Back", callback_data="back_to_supreme")]])
     )
 
-@bot.on_callback_query(filters.regex("^manage_supreme$"))
-async def manage_supreme_cb(_, query):
+@Client.on_callback_query(filters.regex("^manage_supreme$"))
+async def manage_supreme_cb(client, query):
     if query.from_user.id != config.OWNER_ID:
         return await query.answer("Only Owner can manage Supreme Users.", show_alert=True)
 
@@ -237,13 +236,13 @@ async def manage_supreme_cb(_, query):
         reply_markup=types.InlineKeyboardMarkup([[types.InlineKeyboardButton("Back", callback_data="back_to_supreme")]])
     )
 
-@bot.on_callback_query(filters.regex("^close_panel$"))
-async def close_panel_cb(_, query):
+@Client.on_callback_query(filters.regex("^close_panel$"))
+async def close_panel_cb(client, query):
     await query.message.delete()
 
 # Implement basic broadcast command as well
-@bot.on_message(filters.command("broadcast") & filters.private)
-async def broadcast_handler(_, message):
+@Client.on_message(filters.command("broadcast") & filters.private)
+async def broadcast_handler(client, message):
     if not await db.is_supreme(message.from_user.id):
         return await message.reply("You don't have Supreme access.")
 
@@ -276,8 +275,8 @@ async def broadcast_handler(_, message):
 
     await msg.edit(f"Broadcast completed. Sent to {count} chats.")
 
-@bot.on_message(filters.command("addsupreme") & filters.user(config.OWNER_ID))
-async def add_supreme_cmd(_, message):
+@Client.on_message(filters.command("addsupreme") & filters.user(config.OWNER_ID))
+async def add_supreme_cmd(client, message):
     if not message.reply_to_message:
         return await message.reply("Reply to a user to give them Supreme powers.")
 
@@ -285,8 +284,8 @@ async def add_supreme_cmd(_, message):
     await db.add_supreme(user_id)
     await message.reply(f"User {user_id} is now a Supreme user.")
 
-@bot.on_message(filters.command("remsupreme") & filters.user(config.OWNER_ID))
-async def rem_supreme_cmd(_, message):
+@Client.on_message(filters.command("remsupreme") & filters.user(config.OWNER_ID))
+async def rem_supreme_cmd(client, message):
     if not message.reply_to_message:
         return await message.reply("Reply to a user to remove their Supreme powers.")
 
