@@ -21,51 +21,73 @@ async def start_server():
     await site.start()
     logger.info(f"Health check server started on port {port}")
 
+async def start_assistant():
+    if not os.getenv("STRING_SESSION"):
+        logger.error("STRING_SESSION is missing. Assistant will not start.")
+        return
+
+    try:
+        logger.info("Starting Assistant...")
+        await asyncio.wait_for(assistant.start(), timeout=60)
+        logger.info("Assistant started.")
+
+        await call_py.start()
+        logger.info("Py-TgCalls started.")
+    except asyncio.TimeoutError:
+        logger.error("Assistant startup timed out.")
+    except Exception as e:
+        if "unpack requires a buffer of" in str(e):
+            logger.error("Invalid STRING_SESSION: Failed to unpack session string.")
+        else:
+            logger.error(f"Failed to start Assistant: {e}")
+
+async def start_clones_task():
+    from bot.plugins.clone import start_clone
+    from bot.database.db import db
+    try:
+        logger.info("Fetching clones from database...")
+        clones = await db.get_clones()
+        logger.info(f"Found {len(clones)} clones. Starting...")
+        for clone in clones:
+            try:
+                await start_clone(clone['bot_token'], clone['api_id'], clone['api_hash'], clone['string_session'])
+                logger.info(f"Started clone: {clone['bot_token'][:10]}...")
+            except Exception as e:
+                logger.error(f"Failed to start clone {clone['bot_token'][:10]}...: {e}")
+    except Exception as e:
+        logger.error(f"Database error while fetching clones: {e}")
+
 async def main():
     logger.info("Starting Music Bot...")
     await start_server()
-    await bot.start()
-    logger.info("Bot started.")
-    
-    if not os.getenv("STRING_SESSION"):
-        logger.error("STRING_SESSION is missing. Assistant will not start.")
-    else:
-        try:
-            await assistant.start()
-            logger.info("Assistant started.")
-        except Exception as e:
-            if "unpack requires a buffer of" in str(e):
-                logger.error("Invalid STRING_SESSION: Failed to unpack session string. Please check your session string.")
-            else:
-                logger.error(f"Failed to start Assistant: {e}")
-    
-    if assistant.is_connected:
-        await call_py.start()
-        logger.info("Py-TgCalls started.")
-    else:
-        logger.warning("Assistant not started, skipping Py-TgCalls.")
-    
-    logger.info("Bot is idle.")
-    from pyrogram import idle
-    # Start clones
-    from bot.plugins.clone import start_clone
-    from bot.database.db import db
-    clones = await db.get_clones()
-    for clone in clones:
-        try:
-            await start_clone(clone['bot_token'], clone['api_id'], clone['api_hash'], clone['string_session'])
-            logger.info(f"Started clone: {clone['bot_token'][:10]}")
-        except Exception as e:
-            logger.error(f"Failed to start clone {clone['bot_token'][:10]}: {e}")
 
-    # Import auto_service to start the background tasks
+    logger.info("Starting Main Bot...")
+    await bot.start()
+    logger.info("Main Bot started.")
+
+    # Start Assistant and Clones in background to avoid blocking main bot
+    asyncio.create_task(start_assistant())
+    asyncio.create_task(start_clones_task())
+
+    # Start the background services
     from bot.services import auto_service
+    await auto_service.start()
+
+    logger.info("Bot is idle and responding to commands.")
+    from pyrogram import idle
     await idle()
 
+    # Shutdown
     if assistant.is_connected:
-        await call_py.stop()
+        try:
+            await call_py.stop()
+        except:
+            pass
         await assistant.stop()
     await bot.stop()
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        pass
