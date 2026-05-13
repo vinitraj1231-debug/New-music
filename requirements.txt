@@ -12,3 +12,5 @@ requests
 flask
 aiofiles
 pymongo
+beautifulsoup4
+tgcrypto
